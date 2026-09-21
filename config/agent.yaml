@@ -1,0 +1,40 @@
+# Agent Manifest — AgentRegistry entry point
+# AgentRegistry reads every key below at ROOT level — do NOT nest under `agent:`
+# (that shape is invisible to the registry). See CLAUDE.md §5-0.
+id: "HCR-C2-047"
+name: "Elderly Care Vital Anomaly & Family Notification Agent"
+namespace: "hcr"
+version: "0.1.3"
+enabled: true
+category: "Cat 2"
+# Deterministic: severity is a threshold computation, not an LLM judgement.
+generation_mode: "deterministic"
+industry: "HCR"
+
+base_type: "DocGenerationAgent"
+
+# Entry point — single dotted import path (module.Class), NOT split module:/class:.
+class: "src.graph.graph.VitalAnomalyNotificationGraph"
+
+# Security — S-1.
+# 要配慮個人情報 (APPI Article 17): vital signs + resident identity are sensitive PII,
+# and NotificationDispatchNode resolves a family contact and sends outbound.
+# VERIFIED_EXTERNAL, not INTERNAL: the AGENTIC STAR Marketplace runner stamps
+# caller_trust_level=VERIFIED_EXTERNAL unconditionally
+# (shared/bootstrap/marketplace_app.py) and has no path that grants INTERNAL, so an
+# INTERNAL requirement is refused by the S-1 gate before execute() on every single
+# invocation — the agent could never run. The runner is the platform itself, not a
+# public caller. PHI handling is unchanged: resident_ref stays an opaque reference,
+# contacts are resolved in-memory and never persisted to State, and the response is
+# PHI-stripped by ResponseValidateNode.
+required_trust_level: "VERIFIED_EXTERNAL"
+
+# Compile-time gate — NOTIFICATION_API_KEY is only read via .get() by the injected
+# notifier (the agent boots and runs without it, dispatch degrades), so it is
+# deliberately NOT declared here: require_at_compile() would hard-fail a deployment
+# that is designed to boot key-less. See CLAUDE.md §5-0.
+requires:
+  secrets: []
+  extras: []
+
+# Runtime parameters live in config/config.yaml — not here.

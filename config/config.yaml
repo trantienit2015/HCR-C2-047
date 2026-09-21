@@ -1,0 +1,10 @@
+# Runtime parameters — loaded by AgentRegistry / cli.py, passed as Graph(config=...).
+# Separate file from config/agent.yaml (the static manifest). See CLAUDE.md §5.
+
+max_retry: 3
+timeout_s: 30
+
+# Severity thresholds (deviation % vs the resident's own baseline) — tunable per
+# facility. Read by AnomalySeverityClassifyNode via self.config.
+critical_deviation_pct: 30
+warning_deviation_pct: 15
